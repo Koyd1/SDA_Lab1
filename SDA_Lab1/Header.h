@@ -17,6 +17,8 @@ struct Film {
 
 
 
+
+
 void inputFilm(Film* f) ;
 void printFilm(const Film& f,int i);
 void freeFilm(Film* f);
