@@ -16,106 +16,135 @@
 #include "Header.h"
 
 using namespace std;
+
 int main() {
-    int n,numOfDel, operationNumber,k=1,isOver,numOfAdd,numOfRed;
+    int n, operationNumber, k = 1, isOver, index;
+    char* searchName;// Dynamic memory allocation
+    char ch;
+    int len = 0;
+    const char* filename = "films.txt"; // Имя файла
+    
     cout << "Введите количество фильмов: ";
-    cin >> n;
+    while (true) {
+        cin >> n;
+        if (cin.fail()) {
+            cout << "Ошибка: Количество фильмов должно быть числом. Пожалуйста, введите количество снова: ";
+            cin.clear(); // Сбрасываем флаг ошибки ввода
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Очищаем буфер ввода до новой строки
+        } else {
+            break; // Если считывание прошло успешно, выходим из цикла
+        }
+    }
     cin.ignore(); // Очистка буфера после ввода числа
 
     // Выделение памяти для массива структур film
     Film* films = new Film[n];
+    PFilm* p = new PFilm[n];
 
     // Ввод массива структур о фильмах
     for (int i = 0; i < n; i++) {
-        inputFilm(&films[i]);
+        inputFilm(films, i, p);
     }
     // Вывод массива на экран
-    cout << "Список фильмов:\n";
-    for (int i = 0; i < n; i++) {
-        printFilm(films[i],i);
-    }
-    
-    while(k){
-        cout<<"Выберите необходимую операцию и введите ее номер:\n"<<"1.Сортировка списка фильмов по названию\n"<<"2.Удаление необходимого фильма из списка\n"<<"3.Добавление нового фильма в конец списка\n"<<"4.Добавление фильма после необходимого элемента\n"<<"5.Отредактировать данные выбранного фильма\n"<<"6.Вывод списка фильмов\n"<<"Впишите число: ";
-        cin>>operationNumber;
+    printFilm(p, n);
+
+    while (k) {
+        cout << "Выберите необходимую операцию и введите ее номер:\n"
+            << "1. Сортировка списка фильмов по названию\n"
+            << "2. Сортировка списка фильмов по году\n"
+            << "3. Удаление необходимого фильма из списка\n"
+            << "4. Добавление нового фильма\n"
+            << "5. Поиск по названию фильма\n"
+            << "6. Поиск по году фильма\n"
+            << "7. Отредактировать данные выбранного фильма\n"
+            << "8. Запись списка фильмов в файл\n"
+            << "9. Вывод списка фильмов\n"
+            << "Впишите число: ";
+        cin >> operationNumber;
         cin.ignore();
         switch (operationNumber) {
-            case 1:
-                // Сортировка массива структур film по полю name
-                filmSort(films, n);
-                // Вывод нового массива на экран
-                cout << "Новый список фильмов:\n";
-                for (int i = 0; i < n; i++) {
-                    printFilm(films[i],i);
+        case 1:
+            // Сортировка массива структур film по полю name
+            filmSort(p, n);
+            printFilm(p, n);
+            break;
+        case 2:
+            //сортировка по году
+            filmYearSort(p, n);
+            printFilm(p, n);
+            break;
+        case 3:
+            // Удаление элемента
+            cout << "Укажите номер элемнта, который требуется удалить: ";
+            cin >> index;
+            cin.ignore();
+            deleteFilm(films, n, index - 1);
+            printFilm(p, n);
+            break;
+        case 4:
+            // Вставка нового элемента
+            insertFilm(films, n, p);
+            printFilm(p, n);
+            break;
+        case 5:
+                //Поиск по названию фильма
+            cout << "Введите название фильма для поиска: ";
+            while (cin.get(ch) && ch != '\n') { // Read until newline
+            char* temp = new char[len + 1];
+                if (searchName) {
+                    strcpy(temp, searchName);
                 }
-                break;
-            case 2:
-                // Удаление элемента
-                cout<<"Укажите номер элемнта, который требуется удалить: ";
-                cin>>numOfDel;
-                cin.ignore();
-                deleteFilm(films, n, numOfDel);
-                cout << "Новый список фильмов:\n";
-                    for (int i = 0; i < n; i++) {
-                        printFilm(films[i],i);
-                    }
-                break;
-            case 3:
-                // Вставка нового элемента
-                insertFilm(films, n);
-                cout << "Новый список фильмов:\n";
-                    for (int i = 0; i < n; i++) {
-                        printFilm(films[i],i);
-                    }
-                break;
-            case 4:
-                cout<<"Введите под каким номером вставить фильм: ";
-                cin>>numOfAdd;
-                cin.ignore();
-                addFilmAfter(films,n,numOfAdd);
-                cout << "Новый список фильмов:\n";
-                    for (int i = 0; i < n; i++) {
-                        printFilm(films[i],i);
-                    }
-                break;
-            case 5:
-                cout<<"Введите номер фильма, который необходимо отредактировать: ";
-                cin>>numOfRed;
-                cin.ignore();
-                redactFilm(films, n, numOfRed);
-                cout << "Новый список фильмов:\n";
-                    for (int i = 0; i < n; i++) {
-                        printFilm(films[i],i);
-                    }
-                break;
-            case 6:
-                // Вывод массива на экран
-                cout << "Список фильмов:\n";
-                for (int i = 0; i < n; i++) {
-                    printFilm(films[i],i);
-                }
-                break;
-            default:
-                cout<<"несуществующий номер операции\n";
+                searchName = temp;
+                searchName[len++] = ch;
+                searchName[len] = '\0';
+            }
+            if (len > 0) { // Perform search only if input is not empty
+                searchFilmByName(p, n, searchName);
+            } else {
+                cout << "Пустой ввод. Повторите попытку.\n";
+            }
+        delete[] searchName;
+            break;
+        case 6:
+            //Поиск по году фильма
+            cout<<"Введите год фильма для поиска: ";
+            cin>>index;
+            searchFilmByYear(p, n, index);
+            break;
+        case 7:
+            cout << "Введите номер фильма, который необходимо отредактировать: ";
+            cin >> index;
+            cin.ignore();
+            redactFilm(films, n, index);
+            printFilm(p, n);
+            break;
+        case 8:
+          
+//            writeFilmsToFile(filename, p, n);
+//            cout << "Данные записаны в файл \"" << filename << "\"" << endl;
+//            break;
+        case 9:
+                //вывод списка фильмов
+            printFilm(p, n);
+            break;
+        default:
+            cout << "несуществующий номер операции\n";
         }
-        
-        cout<<"Звершить программу?\n";
-        cout<<"1.Нет, осуществить еще одну оперцию\n"<<"2(или любое другое число кроме 1). Да, завершить\n"<<"Впишите число: ";
-        cin>>isOver;
-        if(isOver!=1){
+
+        cout << "Звершить программу?\n";
+        cout << "1.Нет, осуществить еще одну оперцию\n"
+            << "2(или любое другое число кроме 1). Да, завершить\n"
+            << "Впишите число: ";
+        cin >> isOver;
+        if (isOver != 1) {
             k--;
-            cout<<"Программа завершена.\n";
+            cout << "Программа завершена.\n";
         }
-           
-        
     }
-    //пример записи в файл
-    writeToFile(films,n);
-    for (int i = 0; i < n; i++) {
-        freeFilm(&films[i]);
-    }
+   
+    // Освобождение памяти
+    freeFilm(films,n);
     delete[] films;
+    delete[] p;
     return 0;
 }
-
-
